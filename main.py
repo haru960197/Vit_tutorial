@@ -10,7 +10,7 @@ from torchvision import transforms
 from torchvision.datasets import CIFAR10
 
 """
-    python3 inference.py --model_name models/1.cpt
+    python3 main.py --model_name models/1.cpt
     のようにして使用
 """
 
@@ -24,6 +24,7 @@ def main(args):
         device =  'cpu'
     print(f"device is {device}")
     
+    # ここでハイパーパラメータを変える
     model = ViT(
         image_size=32,
         patch_size=8,
@@ -58,6 +59,7 @@ def main(args):
             result = np.zeros((args.num_class, args.num_class))
             t_p, f_p, t_n, f_n, = np.zeros(args.num_class), np.zeros(args.num_class), np.zeros(args.num_class), np.zeros(args.num_class)
             model.eval()
+
             for i, batch in pbar:
                 image, label = batch
                 image = image.to(device)
@@ -66,6 +68,7 @@ def main(args):
                 predict = torch.argmax(torch.softmax(logit, dim=-1)).cpu().numpy()
                 label = label.cpu().numpy()
                 result[label, predict] += 1
+            
             for posclass in range(args.num_class):
                 total = result.sum()
                 p = result[:, posclass].sum()
@@ -85,6 +88,7 @@ def main(args):
             precision /= args.num_class
             recall /= args.num_class
             f_score = 2/((1/precision) + (1/recall))
+            
             print(f'accuracy:{accuracy}, precision:{precision}, recall:{recall}, F_Score:{f_score}')
     except ValueError:
         pass
